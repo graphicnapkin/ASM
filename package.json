@@ -1,0 +1,17 @@
+{
+    "name": "asm",
+    "version": "1.0.0",
+    "description": "Library that enables use of Googles Secrets Manager in AppsScript",
+    "scripts": {
+        "glogin": "clasp login",
+        "glogout": "clasp logout",
+        "gpull": "clasp pull",
+        "gpush": "clasp push",
+        "gstart": "clasp push --watch"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@types/google-apps-script": "^1.0.62"
+    }
+}
