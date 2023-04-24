@@ -1,5 +1,3 @@
-//declare var scriptProperties: GoogleAppsScript.Properties.Properties
-
 function runTests() {
     if (!testProjectId) {
         console.log(
