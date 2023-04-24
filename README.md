@@ -1,6 +1,6 @@
 # AppsScript Secrets Manager
 
-Enabling you to easily fetch secrets from GCP Secrets Manager to use in your AppsScript projects. View the compiled output at https://script.google.com/home/projects/19bkwDLT1xtSGoXnHo_aoNft_A9h4h0IP5H0dwi2ScX45qxGk7uw3nPIZ/edit
+Enabling you to easily fetch secrets from GCP Secrets Manager to use in your AppsScript projects. View the compiled output at https://script.google.com/home/projects/19bkwDLT1xtSGoXnHo_aoNft_A9h4h0IP5H0dwi2ScX45qxGk7uw3nPIZ
 
 ## Step 0: Create your Secrets (if you don't have any)
 
