@@ -44,7 +44,6 @@ function useSecret<T>(
     return response
 }
 
-//test
 /**
  * Uses the UrlFetchApp.fetch method to perform a request with basic auth. The secret in Google Secret Manager must be stored in the form of `${username}:${password}`
  * @param {string} projectId - The Id of your GCP project
