@@ -1,4 +1,6 @@
-const scriptProperties = PropertiesService.getScriptProperties()
+// https://script.google.com/macros/library/d/19bkwDLT1xtSGoXnHo_aoNft_A9h4h0IP5H0dwi2ScX45qxGk7uw3nPIZ/1
+const userProperties = PropertiesService.getUserProperties()
+const testProjectId = userProperties.getProperty('projectId')
 /**
  * useSecret provides a callback function a secret fetched from GCP Secrets Manager.
  * The desired secret is found by the secretPath argument.
@@ -13,16 +15,20 @@ const scriptProperties = PropertiesService.getScriptProperties()
  * For more details see: https://github.com/graphicnapkin/ASM#readme
  *
  *
- * @param {string} secretPath SecretPath is the path to the secret including version number.
+ * @param {string} projectId - The Id of your GCP project
+ * @param {string} secretName - The name of your secret in Secret Manager
+ * @param {number} secretVersion - The version of your Secret
  * @param {function(string, ...any)} callbackFunction Callback function that will use secret.
  * @param {...any} callbackArguments Arguments to pass to callback function.
  **/
 function useSecret<T>(
-    secretPath: string,
+    projectId: string,
+    secretName: string,
+    secretVersion: number,
     callbackFunction: (secret: string, ...args: any[]) => T,
     ...callbackArguments: any[]
 ) {
-    const secret = getUnsafeSecret(secretPath)
+    const secret = getUnsafeSecret(projectId, secretName, secretVersion)
     const response = callbackFunction(secret, ...callbackArguments)
 
     /* 
@@ -38,23 +44,28 @@ function useSecret<T>(
     return response
 }
 
+//test
 /**
  * Uses the UrlFetchApp.fetch method to perform a request with basic auth. The secret in Google Secret Manager must be stored in the form of `${username}:${password}`
- * @param {string} secretPath - The Path to the secret in Google Secrets Manager.
+ * @param {string} projectId - The Id of your GCP project
+ * @param {string} secretName - The name of your secret in Secret Manager
+ * @param {number} secretVersion - The version of your Secret
  * @param {string} url - The URL to fetch data from.
  * @param {Object} [params] - Optional request options for the UrlFetchApp.fetch() method.
  * @param {boolean} testing - Used to test this function, returns auth header
  */
 function fetchWithBasicAuth(
-    secretPath: string,
+    projectId: string,
+    secretName: string,
+    secretVersion: number,
     url: string,
     params: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {},
     testing?: boolean
 ) {
-    const secret = getUnsafeSecret(secretPath)
+    const secret = getUnsafeSecret(projectId, secretName, secretVersion)
     params['Authorization'] = 'Basic ' + Utilities.base64Encode(secret)
     if (testing) {
-        scriptProperties.setProperty('basicAuth', JSON.stringify(params))
+        userProperties.setProperty('basicAuth', JSON.stringify(params))
     }
 
     return UrlFetchApp.fetch(url, params)
@@ -62,21 +73,25 @@ function fetchWithBasicAuth(
 
 /**
  * Uses the UrlFetchApp.fetch method to perform a request with basic auth. The secret in Google Secret Manager should include 'Bearer' if it is needed in the api call.
- * @param {string} secretPath - The Path to the secret in Google Secrets Manager.
+ * @param {string} projectId - The Id of your GCP project
+ * @param {string} secretName - The name of your secret in Secret Manager
+ * @param {number} secretVersion - The version of your Secret
  * @param {string} url - The URL to fetch data from.
  * @param {Object} [params] - Optional request options for the UrlFetchApp.fetch() method.
  * @param {boolean} testing - Used to test this function, returns auth header
  */
 function fetchWithBearerToken(
-    secretPath: string,
+    projectId: string,
+    secretName: string,
+    secretVersion: number,
     url: string,
     params: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {},
     testing?: boolean
 ) {
-    const token = getUnsafeSecret(secretPath)
+    const token = getUnsafeSecret(projectId, secretName, secretVersion)
     params['Authorization'] = token
     if (testing) {
-        scriptProperties.setProperty('bearerAuth', JSON.stringify(params))
+        userProperties.setProperty('bearerAuth', JSON.stringify(params))
     }
 
     return UrlFetchApp.fetch(url, params)
@@ -87,10 +102,17 @@ function fetchWithBearerToken(
  * The structure of secretPath is:
  * `projects/${projectId}/secrets/${secretName}/versions/${versionNumber}`
  * For more details see: https://github.com/graphicnapkin/ASM
- * @param {string} secretPath
+ * @param {string} projectId - The Id of your GCP project
+ * @param {string} secretName - The name of your secret in Secret Manager
+ * @param {number} secretVersion - The version of your Secret
  * @return {string} Requested Secret
  **/
-function getUnsafeSecret(secretPath: string): string {
+function getUnsafeSecret(
+    projectId = '12345',
+    secretName: string,
+    secretVersion = 1
+): string {
+    const secretPath = getSecretPath(projectId, secretName, secretVersion || 1)
     if (!secretPath) {
         throw new Error('A secretPath is required for this function.')
     }
@@ -148,81 +170,9 @@ function _byteToString(bytes: number[]): string {
     return decodeURIComponent(result)
 }
 
-/**
-
-Boiler plate to implement JWT function
-
-function getJWT() {
-  // Replace the contents of privateKeyJson with your service account key file contents
-  var privateKeyJson = {
-    "type": "service_account",
-    "project_id": "YOUR_PROJECT_ID",
-    "private_key_id": "YOUR_PRIVATE_KEY_ID",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n",
-    "client_email": "YOUR_SERVICE_ACCOUNT_EMAIL",
-    "client_id": "YOUR_CLIENT_ID",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "YOUR_CERT_URL"
-  };
-
-  var header = {
-    "alg": "RS256",
-    "typ": "JWT"
-  };
-
-  var now = Math.floor(Date.now() / 1000);
-  var claimSet = {
-    "iss": privateKeyJson.client_email,
-    "scope": "https://www.googleapis.com/auth/calendar",
-    "aud": "https://oauth2.googleapis.com/token",
-    "exp": now + 3600,
-    "iat": now
-  };
-
-  var headerBase64Url = Utilities.base64EncodeUrlSafe(JSON.stringify(header));
-  var claimSetBase64Url = Utilities.base64EncodeUrlSafe(JSON.stringify(claimSet));
-  var signatureInput = headerBase64Url + '.' + claimSetBase64Url;
-  var signatureBytes = Utilities.computeRsaSha256Signature(signatureInput, privateKeyJson.private_key);
-  var signatureBase64Url = Utilities.base64EncodeUrlSafe(signatureBytes);
-
-  var jwt = signatureInput + '.' + signatureBase64Url;
-  return jwt;
+function getSecretPath(projectId: string, name: string, version: number) {
+    return 'projects/'
+        .concat(projectId, '/secrets/')
+        .concat(name, '/versions/')
+        .concat(version.toString())
 }
-
-function getAccessToken() {
-  var jwt = getJWT();
-  var payload = {
-    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-    "assertion": jwt
-  };
-  
-  var options = {
-    "method": "post",
-    "payload": payload
-  };
-
-  var response = UrlFetchApp.fetch("https://oauth2.googleapis.com/token", options);
-  var jsonResponse = JSON.parse(response.getContentText());
-  return jsonResponse.access_token;
-}
-
-function makeApiCall() {
-  var accessToken = getAccessToken();
-  var calendarId = 'primary';
-  var url = 'https://www.googleapis.com/calendar/v3/calendars/' + calendarId + '/events';
-  
-  var options = {
-    "method": "get",
-    "headers": {
-      "Authorization": "Bearer " + accessToken
-    }
-  };
-
-  var response = UrlFetchApp.fetch(url, options);
-  var jsonResponse = JSON.parse(response.getContentText());
-  Logger.log(jsonResponse);
-}
-
- */

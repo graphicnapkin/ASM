@@ -1,16 +1,30 @@
 //declare var scriptProperties: GoogleAppsScript.Properties.Properties
 
 function runTests() {
+    if (!testProjectId) {
+        console.log(
+            `You must add your project Id as a script property 'projectId' before running tests.
+            You can do so by passing in a project ID to the setTestingProjectId function `
+        )
+        return
+    }
     testGetUnsafeSecret()
     testUseSecret()
     testFetchWithBasicAuth()
     testFetchWithBearerToken()
 }
 
+function setTestingProjectId(projectId = '') {
+    userProperties.setProperty('projectId', projectId)
+}
+
 function testGetUnsafeSecret() {
-    const secretPath = getSecretPath('TestGetUnsafeSecret', 1)
     // secret contents: 'UNSAFE_SECRET'
-    const secret = getUnsafeSecret(secretPath)
+    const secret = getUnsafeSecret(
+        testProjectId || '',
+        'TestGetUnsafeSecret',
+        1
+    )
 
     if (secret != 'UNSAFE_SECRET') {
         console.error(
@@ -20,26 +34,9 @@ function testGetUnsafeSecret() {
     }
 
     try {
-        getUnsafeSecret('/')
+        getUnsafeSecret(testProjectId || '', 'notreal', 1)
     } catch (err) {
-        if (
-            err.toString() != 'Error: Secret not found. secretPath provided: /'
-        ) {
-            console.error(
-                "getUnsafeSecret Failed. Expected error 'Secret not found.' got: " +
-                    err
-            )
-            return
-        }
-    }
-
-    try {
-        getUnsafeSecret('')
-    } catch (err) {
-        if (
-            err.toString() !=
-            'Error: A secretPath is required for this function.'
-        ) {
+        if (!err.toString().includes('Error: Secret not found')) {
             console.error(
                 "getUnsafeSecret Failed. Expected error 'Secret not found.' got: " +
                     err
@@ -52,9 +49,6 @@ function testGetUnsafeSecret() {
 }
 
 function testUseSecret() {
-    // secret contents: 'https://jsonplaceholder.typicode.com/posts?userId='
-    const secretPath = getSecretPath('TestUseUnsafeSecret', 1)
-
     /**
      * @param secretUrl
      * @param number
@@ -65,7 +59,14 @@ function testUseSecret() {
     }
 
     /**@type {UrlFetchApp.HTTPResponse} */
-    const response = useSecret(secretPath, testFunction, 2)
+    // secret contents: 'https://jsonplaceholder.typicode.com/posts?userId='
+    const response = useSecret(
+        testProjectId || '',
+        'TestUseUnsafeSecret',
+        1,
+        testFunction,
+        2
+    )
     const data = JSON.parse(response.getContentText())
 
     if (!Array.isArray(data) || (Array.isArray(data) && data[0]?.userId != 2)) {
@@ -79,14 +80,19 @@ function testUseSecret() {
 }
 
 function testFetchWithBasicAuth() {
-    const secretPath = getSecretPath('TestFetchWithBasicAuth', 1)
-
     // secret contents: 'jc@graphicnapkin.com:superSecretPassword'
-    fetchWithBasicAuth(secretPath, 'testing.com', { method: 'post' }, true)
+    fetchWithBasicAuth(
+        testProjectId || '',
+        'TestFetchWithBasicAuth',
+        1,
+        'testing.com',
+        { method: 'post' },
+        true
+    )
 
-    const stringParams = scriptProperties.getProperty('basicAuth')
+    const stringParams = userProperties.getProperty('basicAuth')
     const params = stringParams ? JSON.parse(stringParams) : ''
-    scriptProperties.deleteProperty('basicAuth')
+    userProperties.deleteProperty('basicAuth')
 
     if (
         // @ts-ignore
@@ -106,14 +112,20 @@ function testFetchWithBasicAuth() {
 }
 
 function testFetchWithBearerToken() {
-    const secretPath = getSecretPath('TestFetchWithBasicAuth', 1)
-
     // secret contents: 'jc@graphicnapkin.com:superSecretPassword'
-    fetchWithBearerToken(secretPath, 'testing.com', { method: 'post' }, true)
+    fetchWithBearerToken(
+        testProjectId || '',
+        // re using BasicAuth secret here as new secret adds no value
+        'TestFetchWithBasicAuth',
+        1,
+        'testing.com',
+        { method: 'post' },
+        true
+    )
 
-    const stringParams = scriptProperties.getProperty('bearerAuth')
+    const stringParams = userProperties.getProperty('bearerAuth')
     const params = stringParams ? JSON.parse(stringParams) : ''
-    scriptProperties.deleteProperty('bearerAuth')
+    userProperties.deleteProperty('bearerAuth')
 
     if (
         // @ts-ignore
@@ -129,8 +141,4 @@ function testFetchWithBearerToken() {
     }
 
     console.log('fetchWithBearerToken Passed.')
-}
-
-function getSecretPath(name: string, version: number) {
-    return `projects/368381444370/secrets/${name}/versions/${version}`
 }
