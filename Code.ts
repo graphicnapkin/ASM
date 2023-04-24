@@ -105,17 +105,19 @@ function fetchWithBearerToken(
  * @return {string} Requested Secret
  **/
 function getUnsafeSecret(
-    projectId = '12345',
+    projectId: string,
     secretName: string,
     secretVersion = 1
 ): string {
+    if (!secretName || !projectId) {
+        throw new Error(
+            `A secretName and projectId are required for this function. provided:
+            projectId: ${projectId} secretName: ${secretName}`
+        )
+    }
     const secretPath = `projects/${projectId}/secrets/${secretName}/versions/${
         secretVersion || 1
     }`
-    if (!secretPath) {
-        throw new Error('A secretPath is required for this function.')
-    }
-
     const baseUrl = 'https://secretmanager.googleapis.com/v1/'
 
     /*  
