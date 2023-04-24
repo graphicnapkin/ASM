@@ -118,7 +118,6 @@ function getUnsafeSecret(
     const secretPath = `projects/${projectId}/secrets/${secretName}/versions/${
         secretVersion || 1
     }`
-    const baseUrl = 'https://secretmanager.googleapis.com/v1/'
 
     /*  
         Get's an auth token for the effective user which is the account used
@@ -127,7 +126,7 @@ function getUnsafeSecret(
     const token = ScriptApp.getOAuthToken()
 
     const headers = { Authorization: 'Bearer ' + token }
-    const url = `${baseUrl}${secretPath}:access`
+    const url = `$https://secretmanager.googleapis.com/v1/${baseUrl}${secretPath}:access`
 
     let data: { payload?: { data?: string } }
     try {
