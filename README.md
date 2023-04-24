@@ -33,9 +33,11 @@ Enabling you to easily fetch secrets from GCP Secrets Manager to use in your App
 -   Click on the `+` to the right of `Libraries` underneath the files in this project.
 -   Search for your Library by the script ID which can be found between /projects/ and /edit when looking at the url of your library file. I recommend aliasing this as GASM
 -   Recommended: Utlize the `useSecret` function which takes in as arguments:
-    * The path to your secret:  The first part of the secrets path string will be visible under the secret name when viewing the secret within the GCP console. This will be something like `projects/PROJECT_ID/secrets/SECRET_NAME`. On the same page you will see which version number you would like to access. You will then concatenate `/versions/YOUR_VERSION_NUMBER` to the previous string and the entire string will be used as input to the function.
+    * proejctID:  The numbericalID for your GCP project.
+    * secretName: The name you gave the secret in Secret Manager.
+    * secretVersion: Intiger representing the version of the secret, this will be 1 if you have not edited the value.
     * A callback function that will utlize the secret: This function should take as it's first argument the fetched secrets value. It can have any number of additional arguments which will be passed to the callback function.
--   If the above patter does not work for your use case and you need direct access to the secret, do so by passing in your secrets path to the `getSecret` function like so: `const secret = GASM.getSecret(PATH_STRING)`. 
+-   Checkout the fetchWithBasicAuth and fetchWithBearerAuth if you are making a simple API call for ever better secrets management.
 
 # Motivation
 
