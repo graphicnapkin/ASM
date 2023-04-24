@@ -168,8 +168,5 @@ function _byteToString(bytes: number[]): string {
 }
 
 function getSecretPath(projectId: string, name: string, version: number) {
-    return 'projects/'
-        .concat(projectId, '/secrets/')
-        .concat(name, '/versions/')
-        .concat(version.toString())
+    return `projects/${projectId}/secrets/${name}/versions/${version}`
 }
