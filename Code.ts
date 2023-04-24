@@ -109,7 +109,9 @@ function getUnsafeSecret(
     secretName: string,
     secretVersion = 1
 ): string {
-    const secretPath = getSecretPath(projectId, secretName, secretVersion || 1)
+    const secretPath = `projects/${projectId}/secrets/${name}/versions/${
+        secretVersion || 1
+    }`
     if (!secretPath) {
         throw new Error('A secretPath is required for this function.')
     }
@@ -165,8 +167,4 @@ function _byteToString(bytes: number[]): string {
     }
 
     return decodeURIComponent(result)
-}
-
-function getSecretPath(projectId: string, name: string, version: number) {
-    return `projects/${projectId}/secrets/${name}/versions/${version}`
 }
