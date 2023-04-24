@@ -22,6 +22,11 @@ Enabling you to easily fetch secrets from GCP Secrets Manager to use in your App
 -   Click on the Share button on the top left (looks like a profile icon with a +)
 -   Add in the desired individual users, groups or change to anyone in your organization or public
 
+## Step 1: Alternative, use ASM library
+-   In your Apps Script file click the + next to libraries
+-   Paste in this scriptID: 19bkwDLT1xtSGoXnHo_aoNft_A9h4h0IP5H0dwi2ScX45qxGk7uw3nPIZ
+-   Import with whatever name you choose (ASM recommended)
+
 ## Step 2: Using the Library
 
 -   Inside a script that you would like to access a secret, click on `<>` to bring up the code editor.
