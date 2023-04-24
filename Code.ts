@@ -31,9 +31,7 @@ function useSecret<T>(
     const secret = getUnsafeSecret(projectId, secretName, secretVersion)
     const response = callbackFunction(secret, ...callbackArguments)
 
-    /* 
-        This is a naive attempt to make this function more secure and encourage more secure patterns.
-    */
+    //This is a naive attempt to make this function more secure and encourage more secure patterns.
     if (JSON.stringify(response).includes(secret)) {
         throw new Error(
             "Unsafe usage of useSecret's function. Response included the secrets content which " +
