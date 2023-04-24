@@ -109,7 +109,7 @@ function getUnsafeSecret(
     secretName: string,
     secretVersion = 1
 ): string {
-    const secretPath = `projects/${projectId}/secrets/${name}/versions/${
+    const secretPath = `projects/${projectId}/secrets/${secretName}/versions/${
         secretVersion || 1
     }`
     if (!secretPath) {
