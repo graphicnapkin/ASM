@@ -93,7 +93,7 @@ function fetchWithBearerToken(
 
     return UrlFetchApp.fetch(url, params)
 }
-
+// TODO: Get latest Secret Version by default using https://cloud.google.com/secret-manager/docs/reference/rest/v1beta1/projects.secrets.versions/list
 /**
  * Returns secret value from GCP Secret Manager. This is UNSAFE and should be avoided where possible in favor of the useSecrets function.
  * The structure of secretPath is:
@@ -158,6 +158,7 @@ function getUnsafeSecret(
     return _byteToString(secretBytes)
 }
 
+// TODO: Add tests and implement with function that iterates through script properties and creates secrets
 function makeSecret(
     projectId = '368381444370',
     secretId = 'testAppsScriptSecret',
@@ -177,6 +178,7 @@ function makeSecret(
         method: 'post',
         contentType: 'application-json',
         payload: data,
+        //mute error since it will throw if secret already exists
         muteHttpExceptions: true,
     }
     UrlFetchApp.fetch(url, params)
@@ -185,7 +187,11 @@ function makeSecret(
     data = `{"payload":{"data":"${Utilities.base64EncodeWebSafe(
         secretValue
     )}"}}`
-    UrlFetchApp.fetch(url, { ...params, payload: data })
+    UrlFetchApp.fetch(url, {
+        ...params,
+        payload: data,
+        muteHttpExceptions: false,
+    })
 }
 
 function _byteToString(bytes: number[]): string {
