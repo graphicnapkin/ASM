@@ -124,9 +124,8 @@ function getUnsafeSecret(
         to start the script that is leveraging this library.
     */
     const token = ScriptApp.getOAuthToken()
-
     const headers = { Authorization: 'Bearer ' + token }
-    const url = `$https://secretmanager.googleapis.com/v1/${baseUrl}${secretPath}:access`
+    const url = `$https://secretmanager.googleapis.com/v1/${secretPath}:access`
 
     let data: { payload?: { data?: string } }
     try {
@@ -157,6 +156,42 @@ function getUnsafeSecret(
 
     const secretBytes = Utilities.base64Decode(encodedSecret)
     return _byteToString(secretBytes)
+}
+
+function makeSecret(
+    projectId = '368381444370',
+    secretId = 'testAppsScriptSecret',
+    secretValue = 'testSecretValue'
+) {
+    const baseUrl = 'https://secretmanager.googleapis.com/v1/projects'
+    const token = ScriptApp.getOAuthToken()
+    const headers = {
+        Authorization: 'Bearer ' + token,
+        Accept: 'application/json',
+    }
+    let data = '{"replication": { "automatic": {}}}'
+    let url = `${baseUrl}/${projectId}/secrets?secretId=${secretId}`
+    let response = UrlFetchApp.fetch(url, {
+        headers,
+        method: 'post',
+        contentType: 'application-json',
+        payload: data,
+        muteHttpExceptions: true,
+    })
+    console.log(response.getContentText())
+
+    url = `${baseUrl}/${projectId}/secrets/${secretId}:addVersion`
+    data = `{"payload":{"data":"${Utilities.base64EncodeWebSafe(
+        secretValue
+    )}"}}`
+    response = UrlFetchApp.fetch(url, {
+        headers,
+        method: 'post',
+        contentType: 'application-json',
+        payload: data,
+        muteHttpExceptions: true,
+    })
+    console.log(response.getContentText())
 }
 
 function _byteToString(bytes: number[]): string {
