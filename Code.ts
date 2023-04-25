@@ -169,29 +169,23 @@ function makeSecret(
         Authorization: 'Bearer ' + token,
         Accept: 'application/json',
     }
+
     let data = '{"replication": { "automatic": {}}}'
     let url = `${baseUrl}/${projectId}/secrets?secretId=${secretId}`
-    let response = UrlFetchApp.fetch(url, {
+    const params: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
         headers,
         method: 'post',
         contentType: 'application-json',
         payload: data,
         muteHttpExceptions: true,
-    })
-    console.log(response.getContentText())
+    }
+    UrlFetchApp.fetch(url, params)
 
     url = `${baseUrl}/${projectId}/secrets/${secretId}:addVersion`
     data = `{"payload":{"data":"${Utilities.base64EncodeWebSafe(
         secretValue
     )}"}}`
-    response = UrlFetchApp.fetch(url, {
-        headers,
-        method: 'post',
-        contentType: 'application-json',
-        payload: data,
-        muteHttpExceptions: true,
-    })
-    console.log(response.getContentText())
+    UrlFetchApp.fetch(url, { ...params, payload: data })
 }
 
 function _byteToString(bytes: number[]): string {
