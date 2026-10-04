@@ -1,0 +1,13 @@
+flowchart TB
+ subgraph H["Hosted Google environment"]
+ C["Calling Apps Script<br/>Authorized effective user"]
+ A["ASM helper library<br/>Retrieve and decode a secret"]
+ I["OAuth token + Cloud IAM<br/>Permission boundary"]
+ S[("Google Secret Manager<br/>Versioned secret values")]
+ F["Caller callback / request helper<br/>Uses the secret"]
+ end
+ X["Target API<br/>Chosen by caller"]
+ C --> A -->|Effective user's token| I
+ I -->|Authorized access request| S
+ S -->|Secret value| A
+ A --> F -->|Configured API request| X

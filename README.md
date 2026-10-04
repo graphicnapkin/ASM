@@ -46,3 +46,7 @@ There is no clear path for securley storing API secrets inside Google AppsScript
 ## Other Thoughts
 
 This project is likely only useful for Google Workspace / GCP Administrators. I chose not to make this a public Library and my reasoning for this was I feel most security organizations that would find this useful would likely also have a requirement to "self host" to ensure full control of the codebase. This may change in the future.
+
+## Architecture overview
+
+[Component diagram and plain-language service roles](docs/architecture/README.md), with editable Mermaid source and rendered SVG/PNG images.
